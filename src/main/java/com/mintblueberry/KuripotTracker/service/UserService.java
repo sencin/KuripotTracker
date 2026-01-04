@@ -9,6 +9,7 @@ import jakarta.persistence.EntityExistsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 @Service
@@ -51,6 +52,21 @@ public class UserService {
         user.setRoles(Set.of(role));
 
         userRepository.save(user);
+    }
+
+    public LinkedHashMap<String, Object> getUserProfileRaw(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        LinkedHashMap<String, Object> resp = new LinkedHashMap<>();
+        resp.put("id", user.getId());
+        resp.put("firstName", user.getFirstName());
+        resp.put("lastName", user.getLastName());
+        resp.put("role", user.getRoles().stream()
+                .map(r -> r.getErole().name())
+                .toList());
+
+        return resp;
     }
 }
 

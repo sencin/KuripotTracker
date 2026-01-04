@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.LinkedHashMap;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthenticationService authenticationService;
