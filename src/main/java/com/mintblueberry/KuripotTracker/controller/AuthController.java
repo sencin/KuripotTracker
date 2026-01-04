@@ -67,7 +67,12 @@ public class AuthController {
         }
     }
 
-
-
+    @PostMapping("/logout")
+    public ResponseEntity<LinkedHashMap<String, Object>> logout() {
+        LinkedHashMap<String, Object> resp = new LinkedHashMap<>();
+        resp.put("message", "User logged out. Please remove the token on client side.");
+        return ResponseEntity.ok(resp);
+    }
+    
 }
 
