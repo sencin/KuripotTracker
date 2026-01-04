@@ -1,6 +1,7 @@
 package com.mintblueberry.KuripotTracker.service;
 
 import com.mintblueberry.KuripotTracker.dto.TransactionRequest;
+import com.mintblueberry.KuripotTracker.dto.TransactionResponse;
 import com.mintblueberry.KuripotTracker.entity.ExpenseCategory;
 import com.mintblueberry.KuripotTracker.entity.PaymentType;
 import com.mintblueberry.KuripotTracker.entity.Transaction;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +62,7 @@ public class TransactionService {
         return transactionRepository.findAll();
     }
 
+
     // READ BY ID
     public Transaction getTransactionById(Long id) {
         return transactionRepository.findById(id).orElse(null);
@@ -102,6 +105,27 @@ public class TransactionService {
 
         transactionRepository.delete(transactionOpt.get());
         return true;
+    }
+
+    public List<TransactionResponse> getTransactionsByUserId(Long userId) {
+        List<Transaction> transactions = transactionRepository.findByUserId(userId);
+        return transactions.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
+
+    private TransactionResponse mapToDto(Transaction transaction) {
+        return TransactionResponse.builder()
+                .id(transaction.getId())
+                .type(transaction.getType())
+                .amount(transaction.getAmount() != null ? transaction.getAmount().toString() : null)
+                .date(transaction.getDate() != null ? transaction.getDate().toString() : null)
+                .time(transaction.getTime() != null ? transaction.getTime().toString() : null)
+                .year(transaction.getYear())
+                .paymentTypeName(transaction.getPaymentType().getName())
+                .expenseCategoryName(transaction.getExpenseCategory().getName())
+                .description(transaction.getDescription())
+                .build();
     }
 }
 

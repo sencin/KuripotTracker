@@ -52,6 +52,9 @@ public class TransactionController {
         return ResponseEntity.ok(transactions);
     }
 
+
+
+
     // READ BY ID
     @GetMapping("/{id}")
     public ResponseEntity<?> getTransactionById(@PathVariable Long id) {
@@ -95,6 +98,12 @@ public class TransactionController {
         LinkedHashMap<String, Object> response = new LinkedHashMap<>();
         response.put("message", "Transaction deleted successfully");
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<TransactionResponse>> getTransactionsByUserId(@PathVariable Long userId) {
+        List<TransactionResponse> transactions = transactionService.getTransactionsByUserId(userId);
+        return ResponseEntity.ok(transactions);
     }
 
     // Helper to map Transaction -> TransactionResponse

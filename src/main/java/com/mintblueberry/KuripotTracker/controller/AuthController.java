@@ -73,6 +73,6 @@ public class AuthController {
         resp.put("message", "User logged out. Please remove the token on client side.");
         return ResponseEntity.ok(resp);
     }
-    
+
 }
 
