@@ -2,24 +2,25 @@ package com.mintblueberry.KuripotTracker.controller;
 
 import com.mintblueberry.KuripotTracker.dto.LoginRequest;
 import com.mintblueberry.KuripotTracker.dto.SignupRequest;
+import com.mintblueberry.KuripotTracker.entity.User;
+import com.mintblueberry.KuripotTracker.repository.UserRepository;
 import com.mintblueberry.KuripotTracker.service.AuthenticationService;
 import jakarta.persistence.EntityExistsException;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.LinkedHashMap;
+@RequiredArgsConstructor
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthenticationService authenticationService;
-
-    public AuthController(AuthenticationService authenticationService) {
-        this.authenticationService = authenticationService;
-    }
+    private final UserRepository userRepository;
 
     @PostMapping("/register")
     public ResponseEntity<LinkedHashMap<String, Object>> signup(@RequestBody SignupRequest signupRequest) {
@@ -46,10 +47,18 @@ public class AuthController {
         try {
             String token = authenticationService.login(request);
 
-            resp.put("success", true);
-            resp.put("message", request.getEmail() + " signed in");
-            resp.put("token", token);
+            User user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
+            resp.put("success", true);
+            resp.put("token", token);
+            resp.put("id", user.getId());
+            resp.put("firstName", user.getFirstName());
+            resp.put("lastName", user.getLastName());
+
+            resp.put("role", user.getRoles().stream()
+                    .map(r -> r.getErole().name())
+                    .toList());
             return ResponseEntity.ok(resp);
         } catch (Exception e) {
             resp.put("success", false);
@@ -57,6 +66,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(resp);
         }
     }
+
 
 
 }
