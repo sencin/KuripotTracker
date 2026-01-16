@@ -47,9 +47,26 @@ public class Transaction {
     private PaymentType paymentType;
 
     // Foreign key to expense category type (replace with your entity)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "expense_category_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "expense_category_id", nullable = true)
     private ExpenseCategory expenseCategory;
 
     private String description;
+
+    @PrePersist
+    @PreUpdate
+    private void validateExpenseCategory() {
+        if ("EXPENSE".equalsIgnoreCase(this.type) && this.expenseCategory == null) {
+            throw new IllegalStateException(
+                    "Expense transaction must have an expense category"
+            );
+        }
+
+        if ("INCOME".equalsIgnoreCase(this.type) && this.expenseCategory != null) {
+            throw new IllegalStateException(
+                    "Income transaction cannot have an expense category"
+            );
+        }
+    }
+
 }

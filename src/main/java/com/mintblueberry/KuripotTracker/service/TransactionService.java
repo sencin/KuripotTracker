@@ -39,8 +39,13 @@ public class TransactionService {
         PaymentType paymentType = paymentTypeRepository.findById(request.getPaymentTypeId())
                 .orElseThrow(() -> new RuntimeException("PaymentType not found"));
 
-        ExpenseCategory expenseCategory = expenseCategoryRepository.findById(request.getExpenseCategoryId())
-                .orElseThrow(() -> new RuntimeException("ExpenseCategory not found"));
+        ExpenseCategory expenseCategory = null;
+
+        // Only fetch the category if the client provided it (optional)
+        if (request.getExpenseCategoryId() != null) {
+            expenseCategory = expenseCategoryRepository.findById(request.getExpenseCategoryId())
+                    .orElseThrow(() -> new RuntimeException("ExpenseCategory not found"));
+        }
 
         Transaction transaction = Transaction.builder()
                 .user(user)
