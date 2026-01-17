@@ -28,9 +28,8 @@ public class TransactionController {
         LinkedHashMap<String, Object> response = new LinkedHashMap<>();
         try {
             String token = authorizationHeader.substring(7);
-            var transaction = transactionService.createTransaction(request, token);
 
-            TransactionResponse transactionResponse = mapToDto(transaction);
+            TransactionResponse transactionResponse = transactionService.createTransaction(request, token);
 
             response.put("message", "Transaction Recorded");
             response.put("transaction", transactionResponse);
@@ -45,10 +44,7 @@ public class TransactionController {
     // READ ALL
     @GetMapping
     public ResponseEntity<List<TransactionResponse>> getAllTransactions() {
-        List<TransactionResponse> transactions = transactionService.getAllTransactions()
-                .stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
+        List<TransactionResponse> transactions = transactionService.getAllTransactions();
         return ResponseEntity.ok(transactions);
     }
 
@@ -57,13 +53,15 @@ public class TransactionController {
 
     // READ BY ID
     @GetMapping("/{id}")
-    public ResponseEntity<?> getTransactionById(@PathVariable Long id) {
-        var transaction = transactionService.getTransactionById(id);
-        if (transaction == null) {
+    public ResponseEntity<TransactionResponse> getTransactionById(@PathVariable Long id) {
+        try {
+            TransactionResponse transaction = transactionService.getTransactionById(id);
+            return ResponseEntity.ok(transaction);
+        } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(mapToDto(transaction));
     }
+
 
     // UPDATE
     @PutMapping("/{id}")
@@ -75,11 +73,9 @@ public class TransactionController {
         LinkedHashMap<String, Object> response = new LinkedHashMap<>();
         try {
             String token = authorizationHeader.substring(7);
-            var updated = transactionService.updateTransaction(id, request, token);
-
-            TransactionResponse transactionResponse = mapToDto(updated);
+            TransactionResponse updated = transactionService.updateTransaction(id, request, token);
             response.put("message", "Transaction Updated");
-            response.put("transaction", transactionResponse);
+            response.put("transaction", updated);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
@@ -104,46 +100,6 @@ public class TransactionController {
     public ResponseEntity<List<TransactionResponse>> getTransactionsByUserId(@PathVariable Long userId) {
         List<TransactionResponse> transactions = transactionService.getTransactionsByUserId(userId);
         return ResponseEntity.ok(transactions);
-    }
-
-    private TransactionResponse mapToDto(Transaction t) {
-
-        String amount = null;
-        if (t.getAmount() != null) {
-            amount = t.getAmount().toString();
-        }
-
-        String date = null;
-        if (t.getDate() != null) {
-            date = t.getDate().toString();
-        }
-
-        String time = null;
-        if (t.getTime() != null) {
-            time = t.getTime().toString();
-        }
-
-        String paymentTypeName = null;
-        if (t.getPaymentType() != null) {
-            paymentTypeName = t.getPaymentType().getName();
-        }
-
-        String expenseCategoryName = null;
-        if (t.getExpenseCategory() != null) {
-            expenseCategoryName = t.getExpenseCategory().getName();
-        }
-
-        return TransactionResponse.builder()
-                .id(t.getId())
-                .type(t.getType())
-                .amount(amount)
-                .date(date)
-                .time(time)
-                .year(t.getYear())
-                .paymentTypeName(paymentTypeName)
-                .expenseCategoryName(expenseCategoryName)
-                .description(t.getDescription())
-                .build();
     }
 
 
