@@ -29,7 +29,7 @@ public class TransactionService {
     private final JwtService jwtService;
 
     @Transactional
-    public Transaction createTransaction(TransactionRequest request, String bearerToken) {
+    public TransactionResponse createTransaction(TransactionRequest request, String bearerToken) {
         // Extract email from Bearer token
         String email = jwtService.extractEmail(bearerToken);
 
@@ -41,10 +41,18 @@ public class TransactionService {
 
         ExpenseCategory expenseCategory = null;
 
-        // Only fetch the category if the client provided it (optional)
-        if (request.getExpenseCategoryId() != null) {
+        // EXPENSE transactions must have a category
+        if ("EXPENSE".equalsIgnoreCase(request.getType())) {
+            if (request.getExpenseCategoryId() == null) {
+                throw new IllegalStateException("Expense transaction must have an expense category");
+            }
             expenseCategory = expenseCategoryRepository.findById(request.getExpenseCategoryId())
                     .orElseThrow(() -> new RuntimeException("ExpenseCategory not found"));
+        }
+
+        // INCOME transactions cannot have a category
+        if ("INCOME".equalsIgnoreCase(request.getType()) && request.getExpenseCategoryId() != null) {
+            throw new IllegalStateException("Income transaction cannot have an expense category");
         }
 
         Transaction transaction = Transaction.builder()
@@ -59,37 +67,67 @@ public class TransactionService {
                 .description(request.getDescription())
                 .build();
 
-        return transactionRepository.save(transaction);
+        transaction = transactionRepository.save(transaction);
+
+        // Return the DTO, not the entity
+        return mapToDto(transaction);
     }
 
+
     // READ ALL
-    public List<Transaction> getAllTransactions() {
-        return transactionRepository.findAll();
+    public List<TransactionResponse> getAllTransactions() {
+        List<Transaction> transactions = transactionRepository.findAll();
+
+        // Map entities to DTOs
+        return transactions.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
     }
+
 
 
     // READ BY ID
-    public Transaction getTransactionById(Long id) {
-        return transactionRepository.findById(id).orElse(null);
-    }
-
-    // UPDATE
-    @Transactional
-    public Transaction updateTransaction(Long id, TransactionRequest request, String token) {
+    public TransactionResponse getTransactionById(Long id) {
         Transaction transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
 
+        return mapToDto(transaction);
+    }
+
+
+    // UPDATE
+    @Transactional
+    public TransactionResponse updateTransaction(Long id, TransactionRequest request, String token) {
+        // Fetch the transaction
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+
+        // Check ownership
         String userEmail = jwtService.extractEmail(token);
         if (!transaction.getUser().getEmail().equals(userEmail)) {
             throw new RuntimeException("Unauthorized to update this transaction");
         }
 
-        var paymentType = paymentTypeRepository.findById(request.getPaymentTypeId())
+        // Fetch payment type
+        PaymentType paymentType = paymentTypeRepository.findById(request.getPaymentTypeId())
                 .orElseThrow(() -> new RuntimeException("Payment type not found"));
 
-        var expenseCategory = expenseCategoryRepository.findById(request.getExpenseCategoryId())
-                .orElseThrow(() -> new RuntimeException("Expense category not found"));
+        // Handle expense category
+        ExpenseCategory expenseCategory = null;
 
+        if ("EXPENSE".equalsIgnoreCase(request.getType())) {
+            if (request.getExpenseCategoryId() == null) {
+                throw new IllegalStateException("Expense transaction must have an expense category");
+            }
+            expenseCategory = expenseCategoryRepository.findById(request.getExpenseCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Expense category not found"));
+        }
+
+        if ("INCOME".equalsIgnoreCase(request.getType()) && request.getExpenseCategoryId() != null) {
+            throw new IllegalStateException("Income transaction cannot have an expense category");
+        }
+
+        // Update fields
         transaction.setType(request.getType());
         transaction.setAmount(request.getAmount());
         transaction.setDate(request.getDate());
@@ -99,8 +137,11 @@ public class TransactionService {
         transaction.setExpenseCategory(expenseCategory);
         transaction.setDescription(request.getDescription());
 
-        return transactionRepository.save(transaction);
+        // Save and return DTO
+        transaction = transactionRepository.save(transaction);
+        return mapToDto(transaction);
     }
+
 
     // DELETE
     @Transactional
@@ -119,17 +160,43 @@ public class TransactionService {
                 .collect(Collectors.toList());
     }
 
-    private TransactionResponse mapToDto(Transaction transaction) {
+    private TransactionResponse mapToDto(Transaction t) {
+
+        String amount = null;
+        if (t.getAmount() != null) {
+            amount = t.getAmount().toString();
+        }
+
+        String date = null;
+        if (t.getDate() != null) {
+            date = t.getDate().toString();
+        }
+
+        String time = null;
+        if (t.getTime() != null) {
+            time = t.getTime().toString();
+        }
+
+        String paymentTypeName = null;
+        if (t.getPaymentType() != null) {
+            paymentTypeName = t.getPaymentType().getName();
+        }
+
+        String expenseCategoryName = null;
+        if (t.getExpenseCategory() != null) {
+            expenseCategoryName = t.getExpenseCategory().getName();
+        }
+
         return TransactionResponse.builder()
-                .id(transaction.getId())
-                .type(transaction.getType())
-                .amount(transaction.getAmount() != null ? transaction.getAmount().toString() : null)
-                .date(transaction.getDate() != null ? transaction.getDate().toString() : null)
-                .time(transaction.getTime() != null ? transaction.getTime().toString() : null)
-                .year(transaction.getYear())
-                .paymentTypeName(transaction.getPaymentType().getName())
-                .expenseCategoryName(transaction.getExpenseCategory().getName())
-                .description(transaction.getDescription())
+                .id(t.getId())
+                .type(t.getType())
+                .amount(amount)
+                .date(date)
+                .time(time)
+                .year(t.getYear())
+                .paymentTypeName(paymentTypeName)
+                .expenseCategoryName(expenseCategoryName)
+                .description(t.getDescription())
                 .build();
     }
 }
