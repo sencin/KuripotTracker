@@ -106,18 +106,45 @@ public class TransactionController {
         return ResponseEntity.ok(transactions);
     }
 
-    // Helper to map Transaction -> TransactionResponse
-    private TransactionResponse mapToDto(Transaction transaction) {
+    private TransactionResponse mapToDto(Transaction t) {
+
+        String amount = null;
+        if (t.getAmount() != null) {
+            amount = t.getAmount().toString();
+        }
+
+        String date = null;
+        if (t.getDate() != null) {
+            date = t.getDate().toString();
+        }
+
+        String time = null;
+        if (t.getTime() != null) {
+            time = t.getTime().toString();
+        }
+
+        String paymentTypeName = null;
+        if (t.getPaymentType() != null) {
+            paymentTypeName = t.getPaymentType().getName();
+        }
+
+        String expenseCategoryName = null;
+        if (t.getExpenseCategory() != null) {
+            expenseCategoryName = t.getExpenseCategory().getName();
+        }
+
         return TransactionResponse.builder()
-                .id(transaction.getId())
-                .type(transaction.getType())
-                .amount(transaction.getAmount() != null ? transaction.getAmount().toString() : null)
-                .date(transaction.getDate() != null ? transaction.getDate().toString() : null)
-                .time(transaction.getTime() != null ? transaction.getTime().toString() : null)
-                .year(transaction.getYear())
-                .paymentTypeName(transaction.getPaymentType().getName())
-                .expenseCategoryName(transaction.getExpenseCategory().getName())
-                .description(transaction.getDescription())
+                .id(t.getId())
+                .type(t.getType())
+                .amount(amount)
+                .date(date)
+                .time(time)
+                .year(t.getYear())
+                .paymentTypeName(paymentTypeName)
+                .expenseCategoryName(expenseCategoryName)
+                .description(t.getDescription())
                 .build();
     }
+
+
 }
