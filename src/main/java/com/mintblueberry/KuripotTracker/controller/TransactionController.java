@@ -5,9 +5,11 @@ import com.mintblueberry.KuripotTracker.dto.TransactionResponse;
 import com.mintblueberry.KuripotTracker.entity.Transaction;
 import com.mintblueberry.KuripotTracker.service.TransactionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -96,11 +98,15 @@ public class TransactionController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<TransactionResponse>> getTransactionsByUserId(@PathVariable Long userId) {
-        List<TransactionResponse> transactions = transactionService.getTransactionsByUserId(userId);
+    @GetMapping("/me")
+    public ResponseEntity<List<TransactionResponse>> getMyTransactions(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @RequestParam(required = false) String type // optional: "INCOME" or "EXPENSE"
+    ) {
+        List<TransactionResponse> transactions = transactionService.getMyTransactions(authorizationHeader, type);
         return ResponseEntity.ok(transactions);
     }
+
 
 
 }

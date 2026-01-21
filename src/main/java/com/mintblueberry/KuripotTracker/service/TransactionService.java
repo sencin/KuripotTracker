@@ -94,6 +94,30 @@ public class TransactionService {
         return mapToDto(transaction);
     }
 
+    public List<TransactionResponse> getMyTransactions(String authorizationHeader, String type) {
+        // Extract email from token
+        String token = authorizationHeader.substring(7);
+        String email = jwtService.extractEmail(token);
+
+        // Fetch user
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Transaction> transactions;
+
+        // Apply optional type filter
+        if (type == null) {
+            transactions = transactionRepository.findByUserId(user.getId());
+        } else {
+            transactions = transactionRepository.findByUserIdAndType(user.getId(), type.toUpperCase());
+        }
+
+        // Map to DTOs
+        return transactions.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
+
 
     // UPDATE
     @Transactional
