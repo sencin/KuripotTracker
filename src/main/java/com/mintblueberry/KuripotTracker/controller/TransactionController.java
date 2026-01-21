@@ -43,60 +43,58 @@ public class TransactionController {
         }
     }
 
-    // READ ALL
-    @GetMapping
-    public ResponseEntity<List<TransactionResponse>> getAllTransactions() {
-        List<TransactionResponse> transactions = transactionService.getAllTransactions();
-        return ResponseEntity.ok(transactions);
-    }
+//    // READ ALL
+//    @GetMapping
+//    public ResponseEntity<List<TransactionResponse>> getAllTransactions() {
+//        List<TransactionResponse> transactions = transactionService.getAllTransactions();
+//        return ResponseEntity.ok(transactions);
+//    }
 
 
-
-
-    // READ BY ID
-    @GetMapping("/{id}")
-    public ResponseEntity<TransactionResponse> getTransactionById(@PathVariable Long id) {
-        try {
-            TransactionResponse transaction = transactionService.getTransactionById(id);
-            return ResponseEntity.ok(transaction);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-
-    // UPDATE
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateTransaction(
-            @PathVariable Long id,
-            @RequestBody TransactionRequest request,
-            @RequestHeader("Authorization") String authorizationHeader
-    ) {
-        LinkedHashMap<String, Object> response = new LinkedHashMap<>();
-        try {
-            String token = authorizationHeader.substring(7);
-            TransactionResponse updated = transactionService.updateTransaction(id, request, token);
-            response.put("message", "Transaction Updated");
-            response.put("transaction", updated);
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            response.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
-
-    // DELETE
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteTransaction(@PathVariable Long id) {
-        boolean deleted = transactionService.deleteTransaction(id);
-        if (!deleted) {
-            return ResponseEntity.notFound().build();
-        }
-        LinkedHashMap<String, Object> response = new LinkedHashMap<>();
-        response.put("message", "Transaction deleted successfully");
-        return ResponseEntity.ok(response);
-    }
+//    // READ BY ID
+//    @GetMapping("/{id}")
+//    public ResponseEntity<TransactionResponse> getTransactionById(@PathVariable Long id) {
+//        try {
+//            TransactionResponse transaction = transactionService.getTransactionById(id);
+//            return ResponseEntity.ok(transaction);
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.notFound().build();
+//        }
+//    }
+//
+//
+//    // UPDATE
+//    @PutMapping("/{id}")
+//    public ResponseEntity<?> updateTransaction(
+//            @PathVariable Long id,
+//            @RequestBody TransactionRequest request,
+//            @RequestHeader("Authorization") String authorizationHeader
+//    ) {
+//        LinkedHashMap<String, Object> response = new LinkedHashMap<>();
+//        try {
+//            String token = authorizationHeader.substring(7);
+//            TransactionResponse updated = transactionService.updateTransaction(id, request, token);
+//            response.put("message", "Transaction Updated");
+//            response.put("transaction", updated);
+//            return ResponseEntity.ok(response);
+//
+//        } catch (Exception e) {
+//            response.put("message", e.getMessage());
+//            return ResponseEntity.badRequest().body(response);
+//        }
+//    }
+//
+//    // DELETE
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<?> deleteTransaction(@PathVariable Long id) {
+//        boolean deleted = transactionService.deleteTransaction(id);
+//        if (!deleted) {
+//            return ResponseEntity.notFound().build();
+//        }
+//        LinkedHashMap<String, Object> response = new LinkedHashMap<>();
+//        response.put("message", "Transaction deleted successfully");
+//        return ResponseEntity.ok(response);
+//    }
 
     @GetMapping("/me")
     public ResponseEntity<List<TransactionResponse>> getMyTransactions(
