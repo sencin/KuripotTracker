@@ -6,26 +6,26 @@ import com.mintblueberry.KuripotTracker.entity.User;
 import com.mintblueberry.KuripotTracker.repository.RoleRepository;
 import com.mintblueberry.KuripotTracker.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-
-    public UserService(UserRepository userRepository,
-                       RoleRepository roleRepository,
-                       PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    private final JwtService jwtService;
+    private final OtpService otpService;
+    private final EmailService emailService;
 
     public void registerAccount(SignupRequest signupRequest) {
 
@@ -41,6 +41,10 @@ public class UserService {
                     return roleRepository.save(newRole);
                 });
 
+
+        String otp = otpService.generateNumericOtp(6);
+        LocalDateTime expiry = LocalDateTime.now().plusMinutes(10);
+
         User user = new User();
         user.setUsername(signupRequest.getEmail());
         user.setFirstName(signupRequest.getFirstName());
@@ -48,10 +52,12 @@ public class UserService {
         user.setLastName(signupRequest.getLastName());
         user.setExtensionName(signupRequest.getExtensionName());
         user.setEmail(signupRequest.getEmail());
+        user.setVerified(false);
         user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
         user.setRoles(Set.of(role));
 
         userRepository.save(user);
+        emailService.sendOtpEmail(signupRequest.getEmail(), otp);
     }
 
     public LinkedHashMap<String, Object> getUserProfileRaw(String email) {
@@ -68,5 +74,21 @@ public class UserService {
 
         return resp;
     }
+
+    @Transactional
+    public void deleteUser(Long targetUserId, String token) {
+        Long loggedInUserId = jwtService.extractUserId(token);
+
+        if (!targetUserId.equals(loggedInUserId)) {
+            throw new RuntimeException("You can only delete your own account");
+        }
+
+        User user = userRepository.findById(targetUserId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.getRoles().clear();
+
+        userRepository.delete(user);
+    }
+
 }
 

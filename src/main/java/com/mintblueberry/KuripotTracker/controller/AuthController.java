@@ -12,7 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
+
 @RequiredArgsConstructor
 
 @RestController
@@ -36,8 +39,27 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 
         } catch (Exception e) {
+            e.printStackTrace();
             response.put("message", "An unexpected error occurred");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<Map<String, String>> verifyOtp(
+            @RequestParam String email,
+            @RequestParam String otp
+    ) {
+        Map<String, String> response = new HashMap<>();
+        try {
+            authenticationService.confirmOtp(email, otp); // void method
+            response.put("success", "true");
+            response.put("message", "OTP verified successfully");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            response.put("success", "false");
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
     }
 

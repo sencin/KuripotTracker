@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
@@ -29,13 +30,17 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final RoleRepository roleRepository;
+    private final OtpService otpService;
+    private final EmailService emailService;
 
-    public AuthenticationService(AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, UserRepository userRepository,  JwtService jwtService, RoleRepository roleRepository) {
+    public AuthenticationService(AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, UserRepository userRepository,  JwtService jwtService, RoleRepository roleRepository, OtpService otpService, EmailService emailService) {
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.roleRepository = roleRepository;
+        this.otpService = otpService;
+        this.emailService = emailService;
     }
     public String login(LoginRequest loginRequest) {
         // Create authentication token
@@ -76,6 +81,8 @@ public class AuthenticationService {
                     return roleRepository.save(newRole);
                 });
 
+        String otp = otpService.generateNumericOtp(6);
+
         User user = new User();
         user.setUsername(signupRequest.getEmail());
         user.setFirstName(signupRequest.getFirstName());
@@ -83,13 +90,21 @@ public class AuthenticationService {
         user.setLastName(signupRequest.getLastName());
         user.setExtensionName(signupRequest.getExtensionName());
         user.setEmail(signupRequest.getEmail());
+        user.setVerified(false);
         user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
-
+        user.setVerificationCode(otp);
+        user.setVerificationExpiry(LocalDateTime.now().plusMinutes(5));
         user.setRoles(Set.of(role));
 
         userRepository.save(user);
+
+        emailService.sendOtpEmail(user.getEmail(), otp);
     }
     public void logoutUser(HttpServletResponse response){
 
+    }
+
+    public void confirmOtp(String email, String otp) {
+        otpService.verifyOtp(email, otp);
     }
 }
