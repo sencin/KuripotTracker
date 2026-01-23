@@ -1,5 +1,6 @@
 package com.mintblueberry.KuripotTracker.service;
 
+import com.mintblueberry.KuripotTracker.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -24,10 +25,11 @@ public class JwtService {
      * Generate a JWT for the given email and return it.
      * No cookie is set; client must store the token and send in Authorization header.
      */
-    public String generateToken(String email) {
+    public String generateToken(User user) {
 
         return Jwts.builder()
-                .claim("email", email)          // custom claim
+                .claim("userId", user.getId())
+                .claim("email", user.getEmail())          // custom claim
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(getSignInKey())
@@ -62,6 +64,28 @@ public class JwtService {
 
         return claims.get("email", String.class);
     }
+
+    public Long extractUserId(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(getSignInKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        Object userIdObj = claims.get("userId");
+        if (userIdObj == null) return null;
+
+
+        if (userIdObj instanceof Long) return (Long) userIdObj;
+        if (userIdObj instanceof Integer) return ((Integer) userIdObj).longValue();
+        if (userIdObj instanceof String) return Long.parseLong((String) userIdObj);
+
+        return null;
+    }
+
+
+
+
 
     /**
      * Get the signing key for HMAC.
