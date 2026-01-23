@@ -1,5 +1,6 @@
 package com.mintblueberry.KuripotTracker.service;
 
+import com.mintblueberry.KuripotTracker.config.CustomUserDetails;
 import com.mintblueberry.KuripotTracker.entity.User;
 import com.mintblueberry.KuripotTracker.repository.UserRepository;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,19 +24,11 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(email + " not found." ));
+                .orElseThrow(() -> new UsernameNotFoundException(email + " not found."));
 
-        Set<GrantedAuthority> authorities = user
-                .getRoles()
-                .stream()
-                .map((role) -> new SimpleGrantedAuthority(role.getErole().name()))
-                .collect(Collectors.toSet());
-
-        return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),
-                user.getPassword(),
-                authorities
-        );
+        return new CustomUserDetails(user);
     }
+
+
+
 }
