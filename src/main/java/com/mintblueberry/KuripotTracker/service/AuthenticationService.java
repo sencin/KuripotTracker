@@ -1,5 +1,6 @@
 package com.mintblueberry.KuripotTracker.service;
 
+import com.mintblueberry.KuripotTracker.config.CustomUserDetails;
 import com.mintblueberry.KuripotTracker.dto.LoginRequest;
 import com.mintblueberry.KuripotTracker.dto.SignupRequest;
 import com.mintblueberry.KuripotTracker.entity.Role;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 
 @Service
@@ -43,11 +45,22 @@ public class AuthenticationService {
         // Authenticate the user
         Authentication authResponse = authenticationManager.authenticate(authRequest);
 
+
         // Set authentication in security context
         SecurityContextHolder.getContext().setAuthentication(authResponse);
 
-        // Generate and return JWT for Bearer usage
-        return jwtService.generateToken(loginRequest.getEmail());
+
+        Object principal = authResponse.getPrincipal();
+
+        if (!(principal instanceof CustomUserDetails userDetails)) {
+            throw new IllegalStateException("Authenticated principal is not a valid user");
+        }
+
+        // Safely get the user from CustomUserDetails
+        User user = Objects.requireNonNull(userDetails.getUser(), "Authenticated user cannot be null");
+
+        // Generate and return JWT using the full User
+        return jwtService.generateToken(user);
     }
 
 
