@@ -167,15 +167,27 @@ public class TransactionService {
     }
 
 
-    // DELETE
+    // DELETE (owner-only)
     @Transactional
-    public boolean deleteTransaction(Long id) {
-        Optional<Transaction> transactionOpt = transactionRepository.findById(id);
-        if (transactionOpt.isEmpty()) return false;
+    public void deleteTransaction(Long transactionId, String token) {
 
-        transactionRepository.delete(transactionOpt.get());
-        return true;
+        Long userId = jwtService.extractUserId(token);
+
+        Transaction transaction = transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+
+        System.out.println("JWT userId: " + userId);
+        System.out.println("Transaction ownerId: " + transaction.getUser().getId());
+
+        // OWNER CHECK — ID vs ID
+        if (!transaction.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Unauthorized to delete this transaction");
+        }
+
+        transactionRepository.delete(transaction);
     }
+
+
 
     public List<TransactionResponse> getTransactionsByUserId(Long userId) {
         List<Transaction> transactions = transactionRepository.findByUserId(userId);

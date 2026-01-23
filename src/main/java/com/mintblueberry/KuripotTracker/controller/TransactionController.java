@@ -85,16 +85,17 @@ public class TransactionController {
 //    }
 //
 //    // DELETE
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<?> deleteTransaction(@PathVariable Long id) {
-//        boolean deleted = transactionService.deleteTransaction(id);
-//        if (!deleted) {
-//            return ResponseEntity.notFound().build();
-//        }
-//        LinkedHashMap<String, Object> response = new LinkedHashMap<>();
-//        response.put("message", "Transaction deleted successfully");
-//        return ResponseEntity.ok(response);
-//    }
+@DeleteMapping("/{id}")
+public ResponseEntity<?> deleteTransaction(@PathVariable Long id, @RequestHeader("Authorization") String authorizationHeader) {
+    String token = authorizationHeader.substring(7);
+
+    transactionService.deleteTransaction(id, token);
+
+    LinkedHashMap<String, Object> response = new LinkedHashMap<>();
+    response.put("message", "Transaction deleted");
+    return ResponseEntity.ok(response);
+}
+
 
     @GetMapping("/me")
     public ResponseEntity<List<TransactionResponse>> getMyTransactions(
