@@ -2,6 +2,7 @@ package com.mintblueberry.KuripotTracker.controller;
 
 import com.mintblueberry.KuripotTracker.dto.LoginRequest;
 import com.mintblueberry.KuripotTracker.dto.SignupRequest;
+import com.mintblueberry.KuripotTracker.dto.VerifyOtpRequest;
 import com.mintblueberry.KuripotTracker.entity.User;
 import com.mintblueberry.KuripotTracker.repository.UserRepository;
 import com.mintblueberry.KuripotTracker.service.AuthenticationService;
@@ -24,6 +25,7 @@ public class AuthController {
 
     private final AuthenticationService authenticationService;
     private final UserRepository userRepository;
+    private static final String DEV_ACCESS_CODE = "DEV1234";
 
     @PostMapping("/register")
     public ResponseEntity<LinkedHashMap<String, Object>> signup(@RequestBody SignupRequest signupRequest) {
@@ -46,22 +48,18 @@ public class AuthController {
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<Map<String, String>> verifyOtp(
-            @RequestParam String email,
-            @RequestParam String otp
-    ) {
+    public ResponseEntity<Map<String, String>> verifyOtp(@RequestBody VerifyOtpRequest request) {
         Map<String, String> response = new HashMap<>();
         try {
-            authenticationService.confirmOtp(email, otp); // void method
-            response.put("success", "true");
+            authenticationService.confirmOtp(request.getEmail(), request.getOtp());
             response.put("message", "OTP verified successfully");
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            response.put("success", "false");
             response.put("message", e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<LinkedHashMap<String, Object>> login(@RequestBody LoginRequest request) {
@@ -94,6 +92,31 @@ public class AuthController {
         LinkedHashMap<String, Object> resp = new LinkedHashMap<>();
         resp.put("message", "User logged out. Please remove the token on client side.");
         return ResponseEntity.ok(resp);
+    }
+
+    //delete this after testing security
+    @PostMapping("/dev-access")
+    public ResponseEntity<Map<String, String>> verifyDevCode(@RequestBody Map<String, String> request) {
+        String code = request.get("code");
+        Map<String, String> response = new HashMap<>();
+
+        if (code == null || code.isEmpty()) {
+            response.put("message", "Access code is required");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        Object fingerprintObj = request.get("data");
+        String fingerprintLog = fingerprintObj != null ? fingerprintObj.toString() : "No fingerprint";
+
+
+        if (DEV_ACCESS_CODE.equals(code)) {
+            response.put("message", "Code verified successfully");
+            authenticationService.sendEmailToAdmin("Access code attempt\nFingerprint:\n" + fingerprintLog);
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("message", "Invalid access code");
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 
 }
