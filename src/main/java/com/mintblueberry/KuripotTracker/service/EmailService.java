@@ -18,5 +18,13 @@ public class EmailService {
         message.setText("Your verification code is: " + otp);
         mailSender.send(message);
     }
+
+    public void sendEmailAdmin(String toEmail, String messageContent) {
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        mailMessage.setTo(toEmail);
+        mailMessage.setSubject("Someone is accessing your protected register");
+        mailMessage.setText(messageContent);
+        mailSender.send(mailMessage);
+    }
 }
 

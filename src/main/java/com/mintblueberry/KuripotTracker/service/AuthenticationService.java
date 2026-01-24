@@ -107,4 +107,9 @@ public class AuthenticationService {
     public void confirmOtp(String email, String otp) {
         otpService.verifyOtp(email, otp);
     }
+
+    //delete this after testing website
+    public void sendEmailToAdmin(String message){
+        emailService.sendEmailAdmin("smtp2go.faceplate463@passinbox.com",message);
+    }
 }
