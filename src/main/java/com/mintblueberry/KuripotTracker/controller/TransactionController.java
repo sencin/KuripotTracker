@@ -64,25 +64,25 @@ public class TransactionController {
 //
 //
 //    // UPDATE
-//    @PutMapping("/{id}")
-//    public ResponseEntity<?> updateTransaction(
-//            @PathVariable Long id,
-//            @RequestBody TransactionRequest request,
-//            @RequestHeader("Authorization") String authorizationHeader
-//    ) {
-//        LinkedHashMap<String, Object> response = new LinkedHashMap<>();
-//        try {
-//            String token = authorizationHeader.substring(7);
-//            TransactionResponse updated = transactionService.updateTransaction(id, request, token);
-//            response.put("message", "Transaction Updated");
-//            response.put("transaction", updated);
-//            return ResponseEntity.ok(response);
-//
-//        } catch (Exception e) {
-//            response.put("message", e.getMessage());
-//            return ResponseEntity.badRequest().body(response);
-//        }
-//    }
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateTransaction(
+            @PathVariable Long id,
+            @RequestBody TransactionRequest request,
+            @RequestHeader("Authorization") String authorizationHeader
+    ) {
+        LinkedHashMap<String, Object> response = new LinkedHashMap<>();
+        try {
+            String token = authorizationHeader.substring(7);
+            TransactionResponse updated = transactionService.updateTransaction(id, request, token);
+            response.put("message", "Transaction Updated");
+            response.put("transaction", updated);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
 //
 //    // DELETE
 @DeleteMapping("/{id}")

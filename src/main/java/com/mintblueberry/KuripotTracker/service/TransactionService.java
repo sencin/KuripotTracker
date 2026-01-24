@@ -122,15 +122,16 @@ public class TransactionService {
     // UPDATE
     @Transactional
     public TransactionResponse updateTransaction(Long id, TransactionRequest request, String token) {
+        Long userId = jwtService.extractUserId(token);
+
         // Fetch the transaction
         Transaction transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
 
-        // Check ownership
-        String userEmail = jwtService.extractEmail(token);
-        if (!transaction.getUser().getEmail().equals(userEmail)) {
+        if (!transaction.getUser().getId().equals(userId)) {
             throw new RuntimeException("Unauthorized to update this transaction");
         }
+
 
         // Fetch payment type
         PaymentType paymentType = paymentTypeRepository.findById(request.getPaymentTypeId())
@@ -152,7 +153,7 @@ public class TransactionService {
         }
 
         // Update fields
-        transaction.setType(request.getType());
+//        transaction.setType(request.getType());
         transaction.setAmount(request.getAmount());
         transaction.setDate(request.getDate());
         transaction.setTime(request.getTime());
