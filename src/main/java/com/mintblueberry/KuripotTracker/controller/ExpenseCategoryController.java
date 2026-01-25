@@ -18,23 +18,23 @@ public class ExpenseCategoryController {
     private final ExpenseCategoryRepository expenseCategoryRepository;
 
     // Create
-    @PostMapping
-    public ResponseEntity<LinkedHashMap<String, Object>> createExpenseCategory(@RequestBody ExpenseCategoryRequest request) {
-        LinkedHashMap<String, Object> response = new LinkedHashMap<>();
-        try {
-            ExpenseCategory category = new ExpenseCategory();
-            category.setName(request.getName());
-            expenseCategoryRepository.save(category);
+    // @PostMapping
+    // public ResponseEntity<LinkedHashMap<String, Object>> createExpenseCategory(@RequestBody ExpenseCategoryRequest request) {
+    //     LinkedHashMap<String, Object> response = new LinkedHashMap<>();
+    //     try {
+    //         ExpenseCategory category = new ExpenseCategory();
+    //         category.setName(request.getName());
+    //         expenseCategoryRepository.save(category);
 
-            response.put("success", true);
-            response.put("expenseCategory", category);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
+    //         response.put("success", true);
+    //         response.put("expenseCategory", category);
+    //         return ResponseEntity.ok(response);
+    //     } catch (Exception e) {
+    //         response.put("success", false);
+    //         response.put("message", e.getMessage());
+    //         return ResponseEntity.badRequest().body(response);
+    //     }
+    // }
 
     // Read all
     @GetMapping
@@ -51,39 +51,39 @@ public class ExpenseCategoryController {
     }
 
     // Update
-    @PutMapping("/{id}")
-    public ResponseEntity<LinkedHashMap<String, Object>> updateExpenseCategory(
-            @PathVariable Long id,
-            @RequestBody ExpenseCategoryRequest request
-    ) {
-        LinkedHashMap<String, Object> response = new LinkedHashMap<>();
-        return expenseCategoryRepository.findById(id).map(category -> {
-            category.setName(request.getName());
-            expenseCategoryRepository.save(category);
-            response.put("success", true);
-            response.put("expenseCategory", category);
-            return ResponseEntity.ok(response);
-        }).orElseGet(() -> {
-            response.put("success", false);
-            response.put("message", "ExpenseCategory not found");
-            return ResponseEntity.badRequest().body(response);
-        });
-    }
+    // @PutMapping("/{id}")
+    // public ResponseEntity<LinkedHashMap<String, Object>> updateExpenseCategory(
+    //         @PathVariable Long id,
+    //         @RequestBody ExpenseCategoryRequest request
+    // ) {
+    //     LinkedHashMap<String, Object> response = new LinkedHashMap<>();
+    //     return expenseCategoryRepository.findById(id).map(category -> {
+    //         category.setName(request.getName());
+    //         expenseCategoryRepository.save(category);
+    //         response.put("success", true);
+    //         response.put("expenseCategory", category);
+    //         return ResponseEntity.ok(response);
+    //     }).orElseGet(() -> {
+    //         response.put("success", false);
+    //         response.put("message", "ExpenseCategory not found");
+    //         return ResponseEntity.badRequest().body(response);
+    //     });
+    // }
 
     // Delete
-    @DeleteMapping("/{id}")
-    public ResponseEntity<LinkedHashMap<String, Object>> deleteExpenseCategory(@PathVariable Long id) {
-        LinkedHashMap<String, Object> response = new LinkedHashMap<>();
-        return expenseCategoryRepository.findById(id).map(category -> {
-            expenseCategoryRepository.delete(category);
-            response.put("success", true);
-            response.put("message", "Deleted successfully");
-            return ResponseEntity.ok(response);
-        }).orElseGet(() -> {
-            response.put("success", false);
-            response.put("message", "ExpenseCategory not found");
-            return ResponseEntity.badRequest().body(response);
-        });
-    }
+    // @DeleteMapping("/{id}")
+    // public ResponseEntity<LinkedHashMap<String, Object>> deleteExpenseCategory(@PathVariable Long id) {
+    //     LinkedHashMap<String, Object> response = new LinkedHashMap<>();
+    //     return expenseCategoryRepository.findById(id).map(category -> {
+    //         expenseCategoryRepository.delete(category);
+    //         response.put("success", true);
+    //         response.put("message", "Deleted successfully");
+    //         return ResponseEntity.ok(response);
+    //     }).orElseGet(() -> {
+    //         response.put("success", false);
+    //         response.put("message", "ExpenseCategory not found");
+    //         return ResponseEntity.badRequest().body(response);
+    //     });
+    // }
 }
 

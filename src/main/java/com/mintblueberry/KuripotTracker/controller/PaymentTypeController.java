@@ -18,23 +18,23 @@ public class PaymentTypeController {
     private final PaymentTypeRepository paymentTypeRepository;
 
     // Create
-    @PostMapping
-    public ResponseEntity<LinkedHashMap<String, Object>> createPaymentType(@RequestBody PaymentTypeRequest request) {
-        LinkedHashMap<String, Object> response = new LinkedHashMap<>();
-        try {
-            PaymentType paymentType = new PaymentType();
-            paymentType.setName(request.getName());
-            paymentTypeRepository.save(paymentType);
+    // @PostMapping
+    // public ResponseEntity<LinkedHashMap<String, Object>> createPaymentType(@RequestBody PaymentTypeRequest request) {
+    //     LinkedHashMap<String, Object> response = new LinkedHashMap<>();
+    //     try {
+    //         PaymentType paymentType = new PaymentType();
+    //         paymentType.setName(request.getName());
+    //         paymentTypeRepository.save(paymentType);
 
-            response.put("success", true);
-            response.put("paymentType", paymentType);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
+    //         response.put("success", true);
+    //         response.put("paymentType", paymentType);
+    //         return ResponseEntity.ok(response);
+    //     } catch (Exception e) {
+    //         response.put("success", false);
+    //         response.put("message", e.getMessage());
+    //         return ResponseEntity.badRequest().body(response);
+    //     }
+    // }
 
     // Read all
     @GetMapping
@@ -51,39 +51,39 @@ public class PaymentTypeController {
     }
 
     // Update
-    @PutMapping("/{id}")
-    public ResponseEntity<LinkedHashMap<String, Object>> updatePaymentType(
-            @PathVariable Long id,
-            @RequestBody PaymentTypeRequest request
-    ) {
-        LinkedHashMap<String, Object> response = new LinkedHashMap<>();
-        return paymentTypeRepository.findById(id).map(paymentType -> {
-            paymentType.setName(request.getName());
-            paymentTypeRepository.save(paymentType);
-            response.put("success", true);
-            response.put("paymentType", paymentType);
-            return ResponseEntity.ok(response);
-        }).orElseGet(() -> {
-            response.put("success", false);
-            response.put("message", "PaymentType not found");
-            return ResponseEntity.badRequest().body(response);
-        });
-    }
+    // @PutMapping("/{id}")
+    // public ResponseEntity<LinkedHashMap<String, Object>> updatePaymentType(
+    //         @PathVariable Long id,
+    //         @RequestBody PaymentTypeRequest request
+    // ) {
+    //     LinkedHashMap<String, Object> response = new LinkedHashMap<>();
+    //     return paymentTypeRepository.findById(id).map(paymentType -> {
+    //         paymentType.setName(request.getName());
+    //         paymentTypeRepository.save(paymentType);
+    //         response.put("success", true);
+    //         response.put("paymentType", paymentType);
+    //         return ResponseEntity.ok(response);
+    //     }).orElseGet(() -> {
+    //         response.put("success", false);
+    //         response.put("message", "PaymentType not found");
+    //         return ResponseEntity.badRequest().body(response);
+    //     });
+    // }
 
     // Delete
-    @DeleteMapping("/{id}")
-    public ResponseEntity<LinkedHashMap<String, Object>> deletePaymentType(@PathVariable Long id) {
-        LinkedHashMap<String, Object> response = new LinkedHashMap<>();
-        return paymentTypeRepository.findById(id).map(paymentType -> {
-            paymentTypeRepository.delete(paymentType);
-            response.put("success", true);
-            response.put("message", "Deleted successfully");
-            return ResponseEntity.ok(response);
-        }).orElseGet(() -> {
-            response.put("success", false);
-            response.put("message", "PaymentType not found");
-            return ResponseEntity.badRequest().body(response);
-        });
-    }
+    // @DeleteMapping("/{id}")
+    // public ResponseEntity<LinkedHashMap<String, Object>> deletePaymentType(@PathVariable Long id) {
+    //     LinkedHashMap<String, Object> response = new LinkedHashMap<>();
+    //     return paymentTypeRepository.findById(id).map(paymentType -> {
+    //         paymentTypeRepository.delete(paymentType);
+    //         response.put("success", true);
+    //         response.put("message", "Deleted successfully");
+    //         return ResponseEntity.ok(response);
+    //     }).orElseGet(() -> {
+    //         response.put("success", false);
+    //         response.put("message", "PaymentType not found");
+    //         return ResponseEntity.badRequest().body(response);
+    //     });
+    // }
 }
 
