@@ -1,89 +1,102 @@
 package com.mintblueberry.KuripotTracker.controller;
 
 import com.mintblueberry.KuripotTracker.dto.ExpenseCategoryRequest;
+import com.mintblueberry.KuripotTracker.dto.ExpenseCategoryResponse;
 import com.mintblueberry.KuripotTracker.entity.ExpenseCategory;
 import com.mintblueberry.KuripotTracker.repository.ExpenseCategoryRepository;
+import com.mintblueberry.KuripotTracker.service.ExpenseCategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/expense-categories")
 @RequiredArgsConstructor
 public class ExpenseCategoryController {
 
-    private final ExpenseCategoryRepository expenseCategoryRepository;
+    private final ExpenseCategoryService expenseCategoryService;
 
     // Create
-    // @PostMapping
-    // public ResponseEntity<LinkedHashMap<String, Object>> createExpenseCategory(@RequestBody ExpenseCategoryRequest request) {
-    //     LinkedHashMap<String, Object> response = new LinkedHashMap<>();
-    //     try {
-    //         ExpenseCategory category = new ExpenseCategory();
-    //         category.setName(request.getName());
-    //         expenseCategoryRepository.save(category);
+    @PostMapping
+    public ResponseEntity<?> createCategory(
+            @RequestHeader("Authorization") String token,
+            @RequestBody Map<String, String> request
+    ) {
+        String name = request.get("name");
+        String image = request.get("image"); // may be null
 
-    //         response.put("success", true);
-    //         response.put("expenseCategory", category);
-    //         return ResponseEntity.ok(response);
-    //     } catch (Exception e) {
-    //         response.put("success", false);
-    //         response.put("message", e.getMessage());
-    //         return ResponseEntity.badRequest().body(response);
-    //     }
-    // }
+        ExpenseCategory category = expenseCategoryService.createExpenseCategory(
+                token.substring(7),
+                name,
+                image
+        );
+
+        Map<String, Object> response = Map.of(
+                "id", category.getId(),
+                "name", category.getName()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
 
     // Read all
     @GetMapping
-    public List<ExpenseCategory> getAllExpenseCategories() {
-        return expenseCategoryRepository.findAll();
+    public ResponseEntity<List<ExpenseCategoryResponse>> getCategories(
+            @RequestHeader("Authorization") String authorizationHeader
+    ) {
+        String token = authorizationHeader.substring(7);
+        List<ExpenseCategory> categories = expenseCategoryService.getAllExpenseCategories(token);
+
+        // Map entities to DTOs
+        List<ExpenseCategoryResponse> result = categories.stream().map(c -> {
+            ExpenseCategoryResponse dto = new ExpenseCategoryResponse();
+            dto.setId(c.getId());
+            dto.setName(c.getName());
+            dto.setImage(c.getImage());
+            return dto;
+        }).toList();
+        return ResponseEntity.ok(result);
     }
+
+
 
     // Read by ID
     @GetMapping("/{id}")
-    public ResponseEntity<ExpenseCategory> getExpenseCategoryById(@PathVariable Long id) {
-        return expenseCategoryRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ExpenseCategory getCategory(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+        return expenseCategoryService.getExpenseCategoryById(token.substring(7), id);
     }
 
     // Update
-    // @PutMapping("/{id}")
-    // public ResponseEntity<LinkedHashMap<String, Object>> updateExpenseCategory(
-    //         @PathVariable Long id,
-    //         @RequestBody ExpenseCategoryRequest request
-    // ) {
-    //     LinkedHashMap<String, Object> response = new LinkedHashMap<>();
-    //     return expenseCategoryRepository.findById(id).map(category -> {
-    //         category.setName(request.getName());
-    //         expenseCategoryRepository.save(category);
-    //         response.put("success", true);
-    //         response.put("expenseCategory", category);
-    //         return ResponseEntity.ok(response);
-    //     }).orElseGet(() -> {
-    //         response.put("success", false);
-    //         response.put("message", "ExpenseCategory not found");
-    //         return ResponseEntity.badRequest().body(response);
-    //     });
-    // }
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateCategory(
+            @RequestHeader("Authorization") String token,
+            @PathVariable Long id,
+            @RequestBody Map<String, String> request
+    ) {
+        String name = request.get("name");     // optional
+        String image = request.get("image");   // optional
+
+        ExpenseCategory category = expenseCategoryService.updateExpenseCategory(
+                token.substring(7),
+                id,
+                name,
+                image
+        );
+
+        return ResponseEntity.ok(Map.of("success", true, "expenseCategory", category));
+    }
 
     // Delete
-    // @DeleteMapping("/{id}")
-    // public ResponseEntity<LinkedHashMap<String, Object>> deleteExpenseCategory(@PathVariable Long id) {
-    //     LinkedHashMap<String, Object> response = new LinkedHashMap<>();
-    //     return expenseCategoryRepository.findById(id).map(category -> {
-    //         expenseCategoryRepository.delete(category);
-    //         response.put("success", true);
-    //         response.put("message", "Deleted successfully");
-    //         return ResponseEntity.ok(response);
-    //     }).orElseGet(() -> {
-    //         response.put("success", false);
-    //         response.put("message", "ExpenseCategory not found");
-    //         return ResponseEntity.badRequest().body(response);
-    //     });
-    // }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteCategory(@RequestHeader("Authorization") String token,
+                                            @PathVariable Long id) {
+        expenseCategoryService.deleteExpenseCategory(token.substring(7), id);
+        return ResponseEntity.ok(Map.of( "message", "Deleted successfully"));
+    }
 }
 

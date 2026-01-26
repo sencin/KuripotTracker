@@ -18,8 +18,16 @@ import java.util.Set;
 @AllArgsConstructor
 
 public class PaymentType {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
+    @Column(nullable = true)
+    private String image; // optional icon
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

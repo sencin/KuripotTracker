@@ -17,8 +17,16 @@ import java.util.Set;
 @AllArgsConstructor
 
 public class ExpenseCategory {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
+    @Column(nullable = true)
+    private String image;
+    // Link to the owning user
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }
