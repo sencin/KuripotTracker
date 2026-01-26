@@ -30,14 +30,14 @@ public class TransactionService {
 
     @Transactional
     public TransactionResponse createTransaction(TransactionRequest request, String bearerToken) {
-        // Extract email from Bearer token
-        String email = jwtService.extractEmail(bearerToken);
+        // Extract user ID from Bearer token
+        Long userId = jwtService.extractUserId(bearerToken);
 
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         PaymentType paymentType = paymentTypeRepository.findById(request.getPaymentTypeId())
-                .orElseThrow(() -> new RuntimeException("PaymentType not found"));
+                .orElseThrow(() -> new RuntimeException("Payment type not found"));
 
         ExpenseCategory expenseCategory = null;
 
@@ -46,8 +46,9 @@ public class TransactionService {
             if (request.getExpenseCategoryId() == null) {
                 throw new IllegalStateException("Expense transaction must have an expense category");
             }
-            expenseCategory = expenseCategoryRepository.findById(request.getExpenseCategoryId())
-                    .orElseThrow(() -> new RuntimeException("ExpenseCategory not found"));
+
+            expenseCategory = expenseCategoryRepository.findByIdAndUserId(request.getExpenseCategoryId(), userId)
+                    .orElseThrow(() -> new RuntimeException("Expense category not found or does not belong to user"));
         }
 
         // INCOME transactions cannot have a category
@@ -61,7 +62,7 @@ public class TransactionService {
                 .amount(request.getAmount())
                 .date(request.getDate())
                 .time(request.getTime())
-                .year(String.valueOf(request.getDate().getYear()))
+                .year(request.getDate() != null ? String.valueOf(request.getDate().getYear()) : null)
                 .paymentType(paymentType)
                 .expenseCategory(expenseCategory)
                 .description(request.getDescription())
@@ -69,10 +70,8 @@ public class TransactionService {
 
         transaction = transactionRepository.save(transaction);
 
-        // Return the DTO, not the entity
         return mapToDto(transaction);
     }
-
 
     // READ ALL
     public List<TransactionResponse> getAllTransactions() {
@@ -83,8 +82,6 @@ public class TransactionService {
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
-
-
 
     // READ BY ID
     public TransactionResponse getTransactionById(Long id) {
@@ -118,20 +115,20 @@ public class TransactionService {
                 .collect(Collectors.toList());
     }
 
-
     // UPDATE
     @Transactional
     public TransactionResponse updateTransaction(Long id, TransactionRequest request, String token) {
+        // Extract user ID from JWT
         Long userId = jwtService.extractUserId(token);
 
         // Fetch the transaction
         Transaction transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
 
+        // OWNER CHECK — only allow updates by the owner
         if (!transaction.getUser().getId().equals(userId)) {
             throw new RuntimeException("Unauthorized to update this transaction");
         }
-
 
         // Fetch payment type
         PaymentType paymentType = paymentTypeRepository.findById(request.getPaymentTypeId())
@@ -144,8 +141,10 @@ public class TransactionService {
             if (request.getExpenseCategoryId() == null) {
                 throw new IllegalStateException("Expense transaction must have an expense category");
             }
-            expenseCategory = expenseCategoryRepository.findById(request.getExpenseCategoryId())
-                    .orElseThrow(() -> new RuntimeException("Expense category not found"));
+
+            // Ensure the category belongs to the user
+            expenseCategory = expenseCategoryRepository.findByIdAndUserId(request.getExpenseCategoryId(), userId)
+                    .orElseThrow(() -> new RuntimeException("Expense category not found or does not belong to user"));
         }
 
         if ("INCOME".equalsIgnoreCase(request.getType()) && request.getExpenseCategoryId() != null) {
@@ -166,7 +165,6 @@ public class TransactionService {
         transaction = transactionRepository.save(transaction);
         return mapToDto(transaction);
     }
-
 
     // DELETE (owner-only)
     @Transactional
