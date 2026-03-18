@@ -60,19 +60,19 @@ public class UserService {
         emailService.sendOtpEmail(signupRequest.getEmail(), otp);
     }
 
-    public LinkedHashMap<String, Object> getUserProfileRaw(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        LinkedHashMap<String, Object> resp = new LinkedHashMap<>();
-        resp.put("id", user.getId());
-        resp.put("firstName", user.getFirstName());
-        resp.put("lastName", user.getLastName());
-        resp.put("role", user.getRoles().stream()
+    public LinkedHashMap<String,Object> retrieveUserInformation(String email){
+        User user = userRepository.findByEmail(email).orElseThrow(()-> new RuntimeException("User not found"));
+
+        LinkedHashMap<String, Object> response = new LinkedHashMap<>();
+        response.put("id", user.getId());
+        response.put("firstName", user.getFirstName());
+        response.put("lastName", user.getLastName());
+        response.put("role", user.getRoles().stream()
                 .map(r -> r.getErole().name())
                 .toList());
 
-        return resp;
+        return  response;
     }
 
     @Transactional
