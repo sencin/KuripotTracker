@@ -25,7 +25,7 @@ public class UserController {
     @GetMapping("/verify-token")
     public ResponseEntity<Map<String, Object>> verifyUserToken(Authentication authentication) {
 
-        boolean isValid = authenticationService.verifyUserToken(authentication);
+        boolean isValid = authenticationService.verifyUserAuthentication(authentication);
 
         if (!isValid) {
             LinkedHashMap<String, Object> errorResp = new LinkedHashMap<>();
@@ -40,15 +40,6 @@ public class UserController {
 
     @GetMapping("/account")
     public ResponseEntity<LinkedHashMap<String, Object>> displayUserCredentials(Authentication authentication){
-
-        boolean isValid = authenticationService.verifyUserToken(authentication);
-
-        if (!isValid) {
-            LinkedHashMap<String, Object> errorResp = new LinkedHashMap<>();
-            errorResp.put("message", "JWT is missing or invalid");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResp);
-        }
-
         LinkedHashMap<String, Object> profile = userService.retrieveUserInformation(authentication.getName());
         return ResponseEntity.ok(profile);
     }
