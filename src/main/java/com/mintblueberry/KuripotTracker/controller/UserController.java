@@ -24,15 +24,7 @@ public class UserController {
 
     @GetMapping("/verify-token")
     public ResponseEntity<Map<String, Object>> verifyUserToken(Authentication authentication) {
-
-        boolean isValid = authenticationService.verifyUserAuthentication(authentication);
-
-        if (!isValid) {
-            LinkedHashMap<String, Object> errorResp = new LinkedHashMap<>();
-            errorResp.put("message", "JWT is missing or invalid");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResp);
-        }
-
+        // if this function is called, The user is already Authenticated
         LinkedHashMap<String, Object> successResp = new LinkedHashMap<>();
         successResp.put("message", "JWT is valid");
         return ResponseEntity.ok(successResp);
