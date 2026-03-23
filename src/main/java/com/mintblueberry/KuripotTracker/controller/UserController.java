@@ -25,9 +25,9 @@ public class UserController {
     @GetMapping("/verify-token")
     public ResponseEntity<Map<String, Object>> verifyUserToken(Authentication authentication) {
         // if this function is called, The user is already Authenticated
-        LinkedHashMap<String, Object> successResp = new LinkedHashMap<>();
-        successResp.put("message", "JWT is valid");
-        return ResponseEntity.ok(successResp);
+        LinkedHashMap<String, Object> profile = userService.retrieveUserInformation(authentication.getName());
+        profile.put("message", "JWT is valid");
+        return ResponseEntity.ok(profile);
     }
 
     @GetMapping("/account")
