@@ -1,5 +1,6 @@
 package com.mintblueberry.KuripotTracker.service;
 
+import com.mintblueberry.KuripotTracker.dto.ExpenseCategorySummary;
 import com.mintblueberry.KuripotTracker.entity.ExpenseCategory;
 import com.mintblueberry.KuripotTracker.entity.User;
 import com.mintblueberry.KuripotTracker.repository.ExpenseCategoryRepository;
@@ -78,6 +79,11 @@ public class ExpenseCategoryService {
                 .orElseThrow(() -> new RuntimeException("Expense category not found"));
 
         expenseCategoryRepository.delete(category);
+    }
+
+    public List<ExpenseCategorySummary> getCategorySummaries(String token) {
+        Long userId = jwtService.extractUserId(token);
+        return expenseCategoryRepository.getCategorySummaries(userId);
     }
 }
 

@@ -2,6 +2,7 @@ package com.mintblueberry.KuripotTracker.controller;
 
 import com.mintblueberry.KuripotTracker.dto.ExpenseCategoryRequest;
 import com.mintblueberry.KuripotTracker.dto.ExpenseCategoryResponse;
+import com.mintblueberry.KuripotTracker.dto.ExpenseCategorySummary;
 import com.mintblueberry.KuripotTracker.entity.ExpenseCategory;
 import com.mintblueberry.KuripotTracker.repository.ExpenseCategoryRepository;
 import com.mintblueberry.KuripotTracker.service.ExpenseCategoryService;
@@ -46,9 +47,7 @@ public class ExpenseCategoryController {
 
     // Read all
     @GetMapping
-    public ResponseEntity<List<ExpenseCategoryResponse>> getCategories(
-            @RequestHeader("Authorization") String authorizationHeader
-    ) {
+    public ResponseEntity<List<ExpenseCategoryResponse>> getCategories(@RequestHeader("Authorization") String authorizationHeader) {
         String token = authorizationHeader.substring(7);
         List<ExpenseCategory> categories = expenseCategoryService.getAllExpenseCategories(token);
 
@@ -63,7 +62,12 @@ public class ExpenseCategoryController {
         return ResponseEntity.ok(result);
     }
 
-
+    @GetMapping("/expense-summary")
+    public ResponseEntity<List<ExpenseCategorySummary>> getSummary(@RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(
+                expenseCategoryService.getCategorySummaries(token.substring(7))
+        );
+    }
 
     // Read by ID
     @GetMapping("/{id}")
