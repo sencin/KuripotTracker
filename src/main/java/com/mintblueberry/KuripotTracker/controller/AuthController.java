@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -95,28 +96,12 @@ public class AuthController {
     }
 
     //delete this after testing security
-    @PostMapping("/dev-access")
-    public ResponseEntity<Map<String, String>> verifyDevCode(@RequestBody Map<String, String> request) {
-        String code = request.get("code");
-        Map<String, String> response = new HashMap<>();
-
-        if (code == null || code.isEmpty()) {
-            response.put("message", "Access code is required");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        Object fingerprintObj = request.get("data");
-        String fingerprintLog = fingerprintObj != null ? fingerprintObj.toString() : "No fingerprint";
-
-
-        if (DEV_ACCESS_CODE.equals(code)) {
-            response.put("message", "Code verified successfully");
-            authenticationService.sendEmailToAdmin("Access code attempt\nFingerprint:\n" + fingerprintLog);
-            return ResponseEntity.ok(response);
-        } else {
-            response.put("message", "Invalid access code");
-            return ResponseEntity.badRequest().body(response);
-        }
+    @GetMapping("/pong")
+    public ResponseEntity<?> pong() {
+        RestTemplate restTemplate = new RestTemplate();
+        String url = "https://direktoryo-ph.0xrepository.workers.dev";
+        String response = restTemplate.getForObject(url, String.class);
+        return ResponseEntity.ok(response);
     }
 
 }
