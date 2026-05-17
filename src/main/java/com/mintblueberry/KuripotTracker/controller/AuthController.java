@@ -101,8 +101,11 @@ public class AuthController {
         RestTemplate restTemplate = new RestTemplate();
         String url = "https://direktoryo-ph.0xrepository.workers.dev";
         String response = restTemplate.getForObject(url, String.class);
-        return ResponseEntity.ok(response);
+        long users = userRepository.keepAlive();
+        Map<String, Object> data = new HashMap<>();
+        data.put("users", users);
+        data.put("response", response);
+        return ResponseEntity.ok(data);
     }
-
 }
 
