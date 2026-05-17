@@ -26,7 +26,6 @@ public class AuthController {
 
     private final AuthenticationService authenticationService;
     private final UserRepository userRepository;
-    private static final String DEV_ACCESS_CODE = "DEV1234";
 
     @PostMapping("/register")
     public ResponseEntity<LinkedHashMap<String, Object>> signup(@RequestBody SignupRequest signupRequest) {
